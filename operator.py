@@ -5,13 +5,12 @@ import time
 import bpy
 from bpy.props import BoolProperty, FloatProperty, IntProperty, StringProperty
 
-# from . import tree_grammar
+from . import tree_grammar
 from . import menu
 from . import utils
 
 props = {}
 use_props = False
-is_first = True
 
 
 class ImportData(bpy.types.Operator):
@@ -102,11 +101,14 @@ class AddTree(bpy.types.Operator):
         layout.menu("GTREE_MT_preset", text="Load Preset")
 
     def execute(self, context):
+        if not props:
+            bpy.ops.gtree.importdata(filename="banayan.json")
+
+        tree_grammar.TreeGrammar(props).draw()
+
         return {"FINISHED"}
 
     def invoke(self, context, event):
-        global is_first
-        is_first = True
         return self.execute(context)
 
 
