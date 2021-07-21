@@ -15,6 +15,8 @@ if "bpy" in locals():
 # Or if this is the first load of this add-on
 else:
     import bpy
+
+    from . import operator
     from . import menu
 
 bl_info = {

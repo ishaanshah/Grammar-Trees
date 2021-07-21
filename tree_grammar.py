@@ -1,7 +1,9 @@
-from random import choices, uniform
+import random
+
 from math import radians
 from mathutils import Euler, Vector
 from mathutils.noise import noise_vector, noise
+
 import bpy
 
 
@@ -16,8 +18,9 @@ class TreeGrammar:
         self.grammar = parameters["grammar"]
         self.geometries = parameters["geometries"]
 
-    def draw(self):
-        initial_width = uniform(self.initial_width[0], self.initial_width[1])
+    def draw(self, seed=0):
+        random.seed(seed)
+        initial_width = random.uniform(self.initial_width[0], self.initial_width[1])
         self.turtle(
             recursion_depth=0,
             symbol=self.start,
@@ -35,7 +38,7 @@ class TreeGrammar:
 
         for rule in self.grammar:
             if rule["input"] == symbol:
-                outputs = choices(rule["output"], rule["likelihood"])[0]
+                outputs = random.choices(rule["output"], rule["likelihood"])[0]
 
         for output in outputs:
             for geometry in self.geometries:
@@ -48,16 +51,16 @@ class TreeGrammar:
                     )
 
     def drawBranch(self, geometry, recursion_depth, width, angle, position):
-        angle_x = radians(uniform(geometry["angle"][0][0], geometry["angle"][0][1])) * (
-            geometry["reduce_angle"][0] ** recursion_depth
-        )
-        angle_y = radians(uniform(geometry["angle"][1][0], geometry["angle"][1][1])) * (
-            geometry["reduce_angle"][1] ** recursion_depth
-        )
-        angle_z = radians(uniform(geometry["angle"][2][0], geometry["angle"][2][1])) * (
-            geometry["reduce_angle"][2] ** recursion_depth
-        )
-        length = uniform(geometry["length"][0], geometry["length"][1]) * (
+        angle_x = radians(
+            random.uniform(geometry["angle"][0][0], geometry["angle"][0][1])
+        ) * (geometry["reduce_angle"][0] ** recursion_depth)
+        angle_y = radians(
+            random.uniform(geometry["angle"][1][0], geometry["angle"][1][1])
+        ) * (geometry["reduce_angle"][1] ** recursion_depth)
+        angle_z = radians(
+            random.uniform(geometry["angle"][2][0], geometry["angle"][2][1])
+        ) * (geometry["reduce_angle"][2] ** recursion_depth)
+        length = random.uniform(geometry["length"][0], geometry["length"][1]) * (
             geometry["reduce_length"] ** recursion_depth
         )
 
@@ -82,7 +85,7 @@ class TreeGrammar:
         points = curve.data.splines[0].points
 
         noise_constant = (
-            uniform(geometry["curve"][0], geometry["curve"][1]) * length / 7
+            random.uniform(geometry["curve"][0], geometry["curve"][1]) * length / 7
         )
         points[0].co = Vector((position[0], position[1], position[2], 1))
         points[4].co = Vector((new_position[0], new_position[1], new_position[2], 1))

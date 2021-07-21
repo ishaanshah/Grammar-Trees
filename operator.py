@@ -10,7 +10,8 @@ from . import menu
 from . import utils
 
 props = {}
-use_props = False
+use_props = True
+is_first = True
 
 
 class ImportData(bpy.types.Operator):
@@ -66,21 +67,14 @@ class AddTree(bpy.types.Operator):
         name="Levels",
         description="Number of recursive branches",
         min=1,
-        max=6,
-        soft_max=4,
+        max=15,
+        soft_max=10,
         default=3,
         update=update_tree,
     )
-    initial_width_lo: FloatProperty(
-        name="Initial Width (lower bound)",
-        description="Lower bound on the initial width of the tree",
-        min=0.0,
-        default=0.1,
-        update=update_tree,
-    )
-    initial_width_hi: FloatProperty(
-        name="Initial Width (upper bound)",
-        description="Upper bound on the initial width of the tree",
+    initial_width: FloatProperty(
+        name="Initial Width",
+        description="Initial width of the tree",
         min=0.0,
         default=0.1,
         update=update_tree,
@@ -95,16 +89,30 @@ class AddTree(bpy.types.Operator):
 
         layout.prop(self, "seed")
         layout.prop(self, "levels")
-        row = layout.row()
-        row.prop(self, "initial_width_lo")
-        row.prop(self, "initial_width_hi")
+        layout.prop(self, "initial_width")
         layout.menu("GTREE_MT_preset", text="Load Preset")
 
     def execute(self, context):
-        if not props:
-            bpy.ops.gtree.importdata(filename="banayan.json")
+        global props, use_props, is_first
 
-        tree_grammar.TreeGrammar(props).draw()
+        # Load pine preset on first run
+        if is_first:
+            bpy.ops.gtree.importdata(filename="pine.json")
+
+        if use_props:
+            # Update properties if preset is changed
+            self.levels = props["max_recursion_depth"]
+            self.initial_width = (
+                props["initial_width"][0] + props["initial_width"][1]
+            ) / 2
+        else:
+            # Update props as per change in properties
+            props["max_recursion_depth"] = self.levels
+            props["initial_width"] = [self.initial_width, self.initial_width]
+
+        tree_grammar.TreeGrammar(props).draw(self.seed)
+        is_first = False
+        use_props = False
 
         return {"FINISHED"}
 
